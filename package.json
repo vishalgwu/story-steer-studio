@@ -1,0 +1,12 @@
+{
+  "name": "story-steer-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check dist/app.js && node --check dist/core.js && node --check dist/providers.js"
+  }
+}

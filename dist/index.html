@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080909" />
+    <meta
+      name="description"
+      content="Write with a living story. Steer its attention, tone, tension and direction."
+    />
+    <title>Story Steer Studio</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23ef6259'/%3E%3Cpath d='M16 2v28M2 16h28' stroke='%23ef6259'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="wordmark">
+        <span class="brand-target">⊕</span> STORY STEER
+        <span class="studio">STUDIO</span>
+      </div>
+      <div class="session-meta">
+        <span id="engine-light" class="light"></span
+        ><span id="engine-label">LOCAL DRAFT</span><span class="divider">/</span
+        ><span id="save-state">saved on this device</span>
+      </div>
+      <button
+        id="setup-button"
+        class="icon-button"
+        aria-label="Open setup"
+        title="Setup & library"
+      >
+        ⚙
+      </button>
+    </header>
+    <main id="canvas">
+      <div class="document-head">
+        <span id="story-title">The forest that never slept</span
+        ><span id="chapter-label">01 / A LIVING DRAFT</span>
+      </div>
+      <div id="story" aria-label="Story text"></div>
+      <div id="empty" hidden>
+        <span>Every story starts somewhere.</span>
+        <p>Generate a first paragraph, or set your own premise in ⚙.</p>
+      </div>
+      <div id="anchor">
+        <button
+          type="button"
+          id="cursor"
+          aria-label="Story cursor: drag to choose a word"
+          title="Drag to a word to continue there. Arrow keys move through words; double-click returns to the end."
+        >
+          ⊕</button
+        ><span id="word-count">0 words</span><span id="writing-label"></span>
+      </div>
+      <section id="steering-space" aria-label="Story steering">
+        <svg id="connections" aria-hidden="true"></svg>
+        <div id="vectors"></div>
+        <div id="dial-host"></div>
+      </section>
+      <div id="attention-actions">
+        <button id="return-end" hidden>↗ Return cursor to end</button
+        ><button id="clear-attention" hidden>× Clear attention</button>
+      </div>
+      <div id="story-error" role="status" hidden></div>
+      <div id="notice" role="status" hidden></div>
+    </main>
+    <div id="cross-x" class="crosshair"></div>
+    <div id="cross-y" class="crosshair"></div>
+    <div class="bottom-zone">
+      <div id="scrub-wrap" hidden>
+        <span>BRANCH</span
+        ><input
+          id="scrub"
+          type="range"
+          min="0"
+          max="100"
+          value="50"
+          aria-label="Scrub last paragraph into a fresh version"
+        /><span id="scrub-label">drag to explore</span>
+      </div>
+      <nav class="actions" aria-label="Writing actions">
+        <button id="generate" class="primary">
+          Generate next <span>↗</span></button
+        ><button id="steer">⊕ Steer</button
+        ><button id="rewrite">↻ Rewrite last</button
+        ><button id="stop" class="stop" hidden>■ Stop</button>
+      </nav>
+      <p id="hint">
+        Select words to focus <span>·</span> Alt + drag up to pin
+        <span>·</span> drag ⊕ backward or forward to continue there
+      </p>
+    </div>
+    <footer>
+      <div>
+        <span id="speed">— tok/s</span><span id="latency">— ms</span
+        ><span id="tokens">0 tokens · est.</span>
+      </div>
+      <div>
+        <span id="counts">box 0 · steer 0 · pin 0</span
+        ><span class="on"><i></i> on</span
+        ><span id="evaluation-mode">relevance estimates</span>
+      </div>
+    </footer>
+    <div id="inspector" class="popover" hidden></div>
+    <div id="pin-preview" hidden></div>
+    <dialog id="setup">
+      <form id="setup-form">
+        <div class="dialog-heading">
+          <div>
+            <span class="eyebrow">YOUR WRITING SPACE</span>
+            <h1>Studio setup<span>.</span></h1>
+          </div>
+          <button
+            type="button"
+            id="close-setup"
+            class="icon-button"
+            aria-label="Close setup"
+          >
+            ×
+          </button>
+        </div>
+        <div class="tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected="true"
+            data-tab="connection"
+          >
+            Connection</button
+          ><button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-tab="story-settings"
+          >
+            Story</button
+          ><button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-tab="library"
+          >
+            Library</button
+          ><button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-tab="about"
+          >
+            How it works
+          </button>
+        </div>
+        <section data-pane="connection">
+          <label
+            >Writing engine<select id="provider">
+              <option value="webllm">
+                Browser AI · open model · no API key
+              </option>
+              <option value="hf">Hugging Face · your token</option>
+              <option value="ollama">Ollama · your local model</option>
+              <option value="custom">OpenAI-compatible endpoint</option>
+              <option value="demo">
+                Offline draft · template fallback, not AI
+              </option>
+            </select></label
+          >
+          <p id="provider-help" class="help"></p>
+          <div id="remote-fields">
+            <label
+              >Chat completions URL<input
+                id="endpoint"
+                type="url"
+                placeholder="https://…/v1/chat/completions" /></label
+            ><label>Model ID<input id="model" autocomplete="off" /></label
+            ><label id="key-field"
+              >API key / Hugging Face token<input
+                id="api-key"
+                type="password"
+                autocomplete="off"
+                placeholder="Stored only in this browser"
+            /></label>
+          </div>
+          <div id="browser-fields">
+            <p class="help">
+              Runs a real open model on your GPU using WebLLM. Requires WebGPU
+              and an initial model download (hundreds of MB). No account or key.
+              Model files are cached by your browser.
+            </p>
+            <button type="button" id="load-model">Load browser model</button>
+            <p id="model-progress" class="help" role="status"></p>
+          </div>
+          <label class="check"
+            ><input id="semantic" type="checkbox" />Measure word similarity with
+            a local embedding model</label
+          >
+          <p class="help">
+            Runs in a background worker. The first word lookup downloads a small
+            model. Similarity is cosine similarity over a candidate vocabulary,
+            not a probability.
+          </p>
+          <label class="check"
+            ><input id="verify-model" type="checkbox" />Use a second model call
+            to check each new paragraph</label
+          >
+          <p class="help">
+            Otherwise, scores use a clearly labeled local language heuristic.
+            The checker is independent of requested strength; it is an estimate,
+            not a guarantee.
+          </p>
+          <button type="button" id="test-connection">Test connection</button>
+          <p id="connection-result" class="help" role="status"></p>
+          <p class="privacy">
+            Your key stays in localStorage on this browser and is sent only to
+            the endpoint you choose. Exports never include it.
+          </p>
+        </section>
+        <section data-pane="story-settings" hidden>
+          <label>Title<input id="title-input" maxlength="100" /></label
+          ><label
+            >Story premise<textarea
+              id="premise"
+              rows="4"
+              maxlength="4000"
+            ></textarea></label
+          ><label
+            >Starting text (optional)<textarea
+              id="seed-text"
+              rows="5"
+              maxlength="20000"
+              placeholder="Begin in your own words…"
+            ></textarea></label
+          ><label
+            >Paragraph length<select id="length">
+              <option value="80">Short · about 80 words</option>
+              <option value="130">Medium · about 130 words</option>
+              <option value="200">Long · about 200 words</option>
+            </select></label
+          ><label class="check"
+            ><input type="checkbox" id="show-scrub" />Show the branch scrubber
+            under the story</label
+          >
+          <p class="help">
+            Every completed scrub makes a fresh alternative to the last
+            paragraph. Your previous versions remain in Library. Steering during
+            generation interrupts the unfinished suffix and regenerates it with
+            your updated controls.
+          </p>
+          <button id="new-story" type="button">Start a new story</button>
+        </section>
+        <section data-pane="library" hidden>
+          <div class="library-tools">
+            <button type="button" id="save-story">Save snapshot</button
+            ><button type="button" id="export">Download .json</button
+            ><button type="button" id="download-text">Download .txt</button
+            ><label class="file-button"
+              >Import .json<input
+                type="file"
+                id="import"
+                accept="application/json,.json"
+                hidden
+            /></label>
+          </div>
+          <div id="library-list"></div>
+        </section>
+        <section data-pane="about" hidden>
+          <h2>The story is the interface.</h2>
+          <p>
+            Select a passage to create an attention box. Its exact text and
+            weight travel with the next generation request. Alt-drag a word
+            upward to pin it, or click a word and choose Pin. Normal dragging
+            selects text. Use the × beside an underlined phrase to remove it.
+          </p>
+          <p>
+            Open ⊕ Steer to choose tension, pace, tone, focus or resolution.
+            Move the red point: angle chooses the quality, distance chooses
+            strength. Click a collapsed point to edit it. Drag the plus circle
+            backward or forward to choose where the next continuation starts.
+            Your previous version stays in Library when you generate a branch.
+          </p>
+          <p>
+            Click a word for semantic neighbours and three possible directions.
+            Live engines generate these suggestions. Offline suggestions are
+            labeled lexical estimates.
+          </p>
+          <p>
+            Rail bars estimate connection to your selected words and recent
+            context. They are not hidden neural attention. Realized scores
+            assess only the newly written paragraph, with the method and
+            explanation available on each label.
+          </p>
+          <p>
+            No login. Stories and settings stay on this device. Browser AI
+            downloads model files; hosted providers receive your story when
+            selected. Ollama must allow this site's exact origin via
+            OLLAMA_ORIGINS.
+          </p>
+          <p>
+            Keyboard: Ctrl/⌘ + Enter generates; Escape stops or closes a
+            control. Dials support arrow keys and + / −. Browser-only hosting
+            cannot protect a shared secret; a public shared-key deployment needs
+            a separate secured endpoint.
+          </p>
+        </section>
+        <div class="dialog-footer">
+          <span id="settings-status">LOCAL TO THIS BROWSER</span
+          ><button type="submit" class="primary">Save & return ↗</button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

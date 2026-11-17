@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.zip
+.sites-local/
+
+# Hosting workspace identity stays outside the GitHub source export
+.openai/
